@@ -46,7 +46,7 @@ def summary(a: dict) -> dict:
             "edition": a["edition"], "paper_date": a["paper_date"], "sport": f.get("sport", ""),
             "story_type": f.get("story_type", ""), "status": f.get("status", ""), "gist": f.get("gist", ""),
             "summary": m.get("summary", ""), "tags": m.get("tags", []), "meaning_status": m.get("status", ""),
-            "winner": f.get("winner", ""), "dates": [d.get("date", "") for d in a.get("dates", []) if d.get("date")],
+            "winner": f.get("winner", ""), "suggestions": len(a.get("suggestions", [])), "dates": [d.get("date", "") for d in a.get("dates", []) if d.get("date")],
             "not_in_text": len(c.get("not_in_text", [])), "failed_steps": c.get("failed_steps", [])}
 
 

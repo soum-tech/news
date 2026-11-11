@@ -3,6 +3,7 @@ All steps for one paper and one class, in order:
     1 split_pdf.py      cut the PDF into articles                      (code)
     2-3 extract.py      seven calls per article -> checked facts -> store  (model + code)
     4 understand.py     one call per article -> meaning -> store            (model)
+    4b suggest.py       one call per article -> grouped suggestion cards    (model + code checks)
     5 search_index.py   search vectors for the day                         (embedding model)
 Each step skips articles already done, so a stopped run can simply be started again.
 Then ask questions with ask.py.
@@ -37,6 +38,7 @@ def main():
     import extract
     import search_index
     import split_pdf
+    import suggest
     import understand
 
     t0 = time.time()
@@ -55,6 +57,8 @@ def main():
     extract.run(day, a.cls, paper=None, limit=a.limit, force=a.force)
     print(f"\n== Step 4: meaning")
     understand.run(day, a.cls, limit=a.limit, force=a.force)
+    print(f"\n== Step 4b: suggestions")
+    suggest.run(day, a.cls, limit=a.limit, force=a.force)
     print(f"\n== Step 5: search index")
     search_index.build(day, a.cls)
     print(f"\nDone in {time.time() - t0:.0f}s. Look:  python news/show.py --date {day}")

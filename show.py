@@ -31,6 +31,11 @@ def show(rec: dict, full_text: bool = False) -> None:
         print(f'  tags: {", ".join(m.get("tags", []))}')
         for q in m.get("answerable_questions", []):
             print(f"  ? {q}")
+    if rec.get("suggestions"):
+        print("\nSUGGESTIONS")
+    for s in rec.get("suggestions", []):
+        print(f'  [{s["category"]}] {s["title"]}: {s["detail"]}'
+              + (" (verify)" if s.get("verify") else "") + (f' <{s["based_on"]}>' if s.get("based_on") else ""))
     if f:
         print(f'\nFACTS  {f.get("sport", "")} / {f.get("story_type", "")} / {f.get("status", "")}')
         print(f'  gist: {f.get("gist", "")}')

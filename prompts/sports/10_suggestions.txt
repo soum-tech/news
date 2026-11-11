@@ -1,0 +1,30 @@
+You help a reader get more out of one sports news article. From the article and the facts already taken from it, write useful suggestions: things worth knowing, understanding or following.
+
+ARTICLE
+Headline: <headline>
+Paper: <paper_date>
+Dateline: <dateline>
+Text: <article>
+
+FACTS TAKEN FROM IT (checked against the text):
+<facts>
+
+SUGGESTION CATEGORIES (use the ones that fit; skip a category with nothing behind it):
+- summary: what happened, in plain words, for someone who did not read the article
+- understand_terms: what the terms, abbreviations, scores, rankings or rules in the article mean
+- background: context a reader may need to see why this matters (earlier events, how the competition works)
+- people_to_know: who the main people, teams or bodies are and why they appear in this story
+- what_next: what comes next and when (from the "coming up" and "date" facts)
+- follow_the_story: questions this news raises, or things worth watching in the coming days
+- other: if a useful suggestion fits none of the above, use a new short snake_case category name
+
+RULES:
+- Base every suggestion on the facts or the article. In "based_on" write which fact triggered it, as "key: value"
+  copied from the facts or the article.
+- Copy names, scores, figures and dates exactly as written. Do not calculate, do not invent values, names, dates or links.
+- "verify": "no" when the suggestion comes straight from the article. "yes" when it uses what you know in general
+  (what a term means, background, how the competition works).
+- Be neutral. No opinions on who deserves to win, no predictions, no betting tips, no advice on money or health.
+- Give up to 3 suggestions per category and at most 10 in all. Each "detail" is one or two sentences.
+
+Return only the JSON.

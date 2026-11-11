@@ -42,6 +42,19 @@
   .answer { margin-top:10px; }
   .note { color:var(--muted); font:13px system-ui, sans-serif; }
   .empty { color:var(--muted); padding:30px 16px; font:14px system-ui, sans-serif; }
+  .filters { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
+  .filters button { background:transparent; color:var(--ink); border-color:var(--line); padding:4px 10px; font:13px system-ui, sans-serif; }
+  .filters button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .cat h4 { margin:14px 0 6px; font:bold 13px system-ui, sans-serif; text-transform:capitalize; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:10px; }
+  .card { background:var(--bg); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:6px; padding:9px 11px; font-size:14px; }
+  .card .t { display:flex; justify-content:space-between; gap:8px; font-weight:bold; }
+  .card .d { margin-top:4px; }
+  .card .b { margin-top:6px; color:var(--muted); font:12px system-ui, sans-serif; }
+  .card .v { flex:none; align-self:flex-start; font:11px system-ui, sans-serif; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--ok); border-color:var(--ok); }
+  .card .v.yes { color:var(--warn); border-color:var(--warn); }
+  .card button { margin-top:7px; padding:3px 9px; font:12px system-ui, sans-serif; }
   @media (max-width: 760px) {
     main { grid-template-columns: 1fr; }
     #list { max-height:none; border-right:0; border-bottom:1px solid var(--line); }
@@ -110,6 +123,7 @@ function chips(a) {
   if (a.sport) out.push(`<span class="chip">${esc(a.sport)}</span>`);
   if (a.story_type) out.push(`<span class="chip">${esc(a.story_type)}</span>`);
   if (a.status) out.push(`<span class="chip">${esc(a.status)}</span>`);
+  if (a.suggestions) out.push(`<span class="chip ok">${a.suggestions} suggestions</span>`);
   if (a.not_in_text) out.push(`<span class="chip warn" title="values not found in the article">${a.not_in_text} unchecked</span>`);
   if (a.failed_steps?.length) out.push(`<span class="chip warn">failed: ${esc(a.failed_steps.join(", "))}</span>`);
   return out.join("");
@@ -164,6 +178,7 @@ async function showArticle(date, id, el) {
       ${m.why_it_matters ? `<p><em>Why it matters:</em> ${esc(m.why_it_matters)}</p>` : ""}
       ${(m.key_points || []).length ? `<ul>${m.key_points.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
       <div>${(m.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div></div>` : `<div class="box"><h3>Meaning</h3><p class="note">Not written yet: run understand.py for this day.</p></div>`}
+    <div id="sug"></div>
     <div class="box"><h3>The sport</h3><table>${rows([
       ["Sport", esc(f.sport)], ["How it works", esc(f.how_it_works)], ["Contest", esc(f.contest_type)],
       ["Winner", esc(f.winner)], ["Result", esc(f.result_summary)], ["Story", esc(f.story_type)]])}</table></div>
@@ -178,6 +193,50 @@ async function showArticle(date, id, el) {
     ${(f.upcoming || []).length ? `<div class="box"><h3>Coming up</h3><ul>${f.upcoming.map((u) => `<li>${esc(u.what)} · ${esc(u.date_text)} · ${esc(u.where)}</li>`).join("")}</ul></div>` : ""}
     ${notes ? `<div class="box"><h3>Not found in the article (check these)</h3><ul>${notes}</ul></div>` : ""}
     <div class="box"><h3>Text</h3><div class="text">${esc(a.text)}</div></div>`;
+  sugFilter = "all";
+  renderSuggestions(a);
+}
+
+// Suggestions: grouped cards like the medical ones. "verify" = uses general knowledge or a number not in the article.
+let sugFilter = "all";
+const hue = (s) => { let h = 0; for (const c of s || "") h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const catColor = (c) => `hsl(${hue(c)} 55% 50%)`;
+
+function renderSuggestions(a) {
+  const el = $("sug");
+  const all = a.suggestions || [];
+  if (!all.length) {
+    el.innerHTML = `<div class="box"><h3>Suggestions</h3><p class="note">None yet: run suggest.py for this day.</p></div>`;
+    return;
+  }
+  const nVerify = all.filter((s) => s.verify).length;
+  const shown = all.map((s, i) => ({ ...s, n: i + 1 }))
+    .filter((s) => sugFilter === "all" || (sugFilter === "verify" ? s.verify : !s.verify));
+  const groups = new Map();
+  for (const s of shown) {
+    const c = s.category || "other";
+    if (!groups.has(c)) groups.set(c, []);
+    groups.get(c).push(s);
+  }
+  const filters = [["all", `All ${all.length}`], ["article", `From the article ${all.length - nVerify}`], ["verify", `Needs verifying ${nVerify}`]]
+    .map(([k, label]) => `<button data-f="${k}" class="${sugFilter === k ? "on" : ""}">${label}</button>`).join("");
+  const cats = [...groups].map(([cat, items]) => `
+    <div class="cat"><h4><span class="swatch" style="background:${catColor(cat)}"></span>${esc(cat.replace(/_/g, " "))} <span class="note">${items.length}</span></h4>
+      <div class="cards">${items.map((s) => `
+        <div class="card" style="border-left-color:${catColor(cat)}">
+          <div class="t"><span><span class="note">#${s.n}</span> ${esc(s.title)}</span>
+            <span class="v ${s.verify ? "yes" : ""}">${s.verify ? "verify" : "from the article"}</span></div>
+          <div class="d">${esc(s.detail)}</div>
+          ${s.based_on ? `<div class="b">based on: ${esc(s.based_on)}</div>` : ""}
+          ${(s.unmatched_numbers || []).length ? `<div class="b">numbers not found in the article: ${esc(s.unmatched_numbers.join(", "))}</div>` : ""}
+          <button class="ghost" data-ask="${esc(s.title)}">Ask about this</button>
+        </div>`).join("")}</div></div>`).join("");
+  el.innerHTML = `<div class="box"><h3>Suggestions</h3><div class="filters">${filters}</div>${cats}
+    <p class="note">Written by a small local model from the facts above. Anything marked "verify" uses general knowledge: check it before relying on it.</p></div>`;
+  el.querySelectorAll(".filters button").forEach((b) => b.onclick = () => { sugFilter = b.dataset.f; renderSuggestions(a); });
+  el.querySelectorAll("[data-ask]").forEach((b) => b.onclick = () => {
+    $("question").value = `${b.dataset.ask} (${a.headline})`; $("question").focus(); window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 }
 
 async function ask() {

@@ -1,0 +1,26 @@
+You write a short, factual background of one person, using ONLY the source text below.
+
+PERSON: <person_name>
+Role in this news: <person_role>
+Sport in this news: <person_sport>
+
+SOURCE TEXT (the start of an encyclopedia page that may be about this person):
+<source_text>
+
+Fill in:
+- "is_same_person": "yes" if the source text is about a person who could be the one in the news (the same sport or
+    a connected role, a matching name). "no" if it is clearly a different person or a different subject.
+- "sport": the sport or sports this person is connected with, as the source says. "" if it does not say.
+- "background": one or two sentences saying who the person is: nationality, birth year or age if stated, their role
+    (player, coach, official), and their team or country, as the source says.
+- "records": up to 5 short items from the source about their career: titles, medals, records, notable results, or
+    positions held, past and present. Copy every number, year and name exactly as the source writes it.
+- "current_status": one sentence on their present position or latest career status, but only if the source states
+    it. "" if it does not. Do not guess what happened after the source was written.
+
+Rules:
+- Use only the source text. Do not add anything you know from elsewhere.
+- Do not diagnose, judge or praise. Keep to facts.
+- Leave a field "" (or the list empty) when the source does not say.
+
+Return only the JSON.

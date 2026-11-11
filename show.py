@@ -36,6 +36,17 @@ def show(rec: dict, full_text: bool = False) -> None:
     for s in rec.get("suggestions", []):
         print(f'  [{s["category"]}] {s["title"]}: {s["detail"]}'
               + (" (verify)" if s.get("verify") else "") + (f' <{s["based_on"]}>' if s.get("based_on") else ""))
+    for p in rec.get("people", []):
+        pr = p["profile"]
+        print(f'\nPERSON {p["name"]} - {p.get("role", "")}')
+        if pr.get("found"):
+            print(f'  {pr.get("sport", "")}: {pr.get("background", "")}')
+            for r in pr.get("records", []):
+                print(f"  * {r}")
+            print(f'  now: {pr.get("current_status", "") or "-"}  [{pr["source"]}: {pr["title"]}, fetched {pr["fetched"]}]'
+                  + (" (verify numbers)" if pr.get("verify") else ""))
+        else:
+            print(f'  no background: {pr.get("reason", "")}')
     if f:
         print(f'\nFACTS  {f.get("sport", "")} / {f.get("story_type", "")} / {f.get("status", "")}')
         print(f'  gist: {f.get("gist", "")}')

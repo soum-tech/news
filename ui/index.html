@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>News archive</title>
+<title>Sports news</title>
 <style>
   :root { --bg:#f6f5f2; --panel:#ffffff; --ink:#1d1d1b; --muted:#6b6a64; --line:#e2dfd8; --accent:#8a1c1c; --ok:#2d6a3e; --warn:#9a5b00; }
   @media (prefers-color-scheme: dark) {
@@ -11,265 +11,154 @@
   }
   :root[data-theme="dark"] { --bg:#161614; --panel:#1f1f1c; --ink:#ece9e1; --muted:#9b988f; --line:#33322e; --accent:#e07a7a; --ok:#7fc08f; --warn:#e0b070; }
   * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 Georgia, "Times New Roman", serif; }
-  header { padding:14px 16px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:2; }
-  h1 { margin:0 0 8px; font-size:20px; letter-spacing:.01em; }
-  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-  select, input, button { font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
-  input[type=search] { flex:1 1 220px; min-width:0; }
-  button { cursor:pointer; background:var(--accent); color:#fff; border-color:var(--accent); }
-  button.ghost { background:transparent; color:var(--ink); border-color:var(--line); }
-  main { display:grid; grid-template-columns: minmax(260px, 380px) 1fr; gap:0; min-height:calc(100vh - 110px); }
-  #list { border-right:1px solid var(--line); overflow:auto; max-height:calc(100vh - 110px); }
-  #detail { padding:18px 22px; overflow:auto; max-height:calc(100vh - 110px); }
-  .item { padding:11px 14px; border-bottom:1px solid var(--line); cursor:pointer; }
-  .item:hover, .item.on { background:var(--panel); }
-  .item .h { font-weight:bold; font-size:15px; }
-  .item .m { color:var(--muted); font-size:12.5px; margin-top:3px; }
-  .chip { display:inline-block; font:12px system-ui, sans-serif; padding:1px 7px; margin:2px 3px 0 0; border:1px solid var(--line); border-radius:99px; color:var(--muted); }
-  .chip.warn { color:var(--warn); border-color:var(--warn); }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Georgia, "Times New Roman", serif; }
+  .wrap { max-width:1000px; margin:0 auto; padding:0 16px 40px; }
+  header { padding:22px 0 10px; }
+  h1 { margin:0; font-size:44px; letter-spacing:.14em; text-transform:uppercase; }
+  .sub { display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:var(--muted); font:14px system-ui, sans-serif; margin-top:6px; }
+  select { font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--panel); color:var(--ink); }
+  nav { position:sticky; top:0; z-index:2; background:var(--bg); padding:10px 0; border-bottom:2px solid var(--ink); display:flex; flex-wrap:wrap; gap:8px; }
+  nav button { font:600 14px system-ui, sans-serif; padding:6px 13px; border:1px solid var(--line); border-radius:99px; background:var(--panel); color:var(--ink); cursor:pointer; text-transform:capitalize; }
+  nav button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  nav button span { opacity:.65; margin-left:5px; font-weight:400; }
+  h2.topic { font-size:26px; margin:26px 0 4px; text-transform:capitalize; }
+  .story { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:14px 0; }
+  .story h3 { margin:0 0 4px; font-size:21px; line-height:1.3; }
+  .meta { color:var(--muted); font:13px system-ui, sans-serif; margin-bottom:10px; }
+  .chip { display:inline-block; font:12px system-ui, sans-serif; padding:1px 8px; margin:0 4px 0 0; border:1px solid var(--line); border-radius:99px; color:var(--muted); }
   .chip.ok { color:var(--ok); border-color:var(--ok); }
-  h2 { font-size:22px; margin:4px 0 6px; line-height:1.25; }
-  .meta { color:var(--muted); font:13px system-ui, sans-serif; margin-bottom:14px; }
-  .box { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin:12px 0; }
-  .box h3 { margin:0 0 6px; font:bold 12px system-ui, sans-serif; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
-  table { width:100%; border-collapse:collapse; font:14px system-ui, sans-serif; }
-  td, th { text-align:left; padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { color:var(--muted); font-weight:normal; }
-  .text { white-space:pre-wrap; font-size:14.5px; max-height:280px; overflow:auto; }
-  .ask { margin:0 0 14px; padding:12px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
-  .ask .bar input { flex:1 1 300px; }
-  .answer { margin-top:10px; }
-  .note { color:var(--muted); font:13px system-ui, sans-serif; }
-  .empty { color:var(--muted); padding:30px 16px; font:14px system-ui, sans-serif; }
-  .filters { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
-  .filters button { background:transparent; color:var(--ink); border-color:var(--line); padding:4px 10px; font:13px system-ui, sans-serif; }
-  .filters button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
-  .cat h4 { margin:14px 0 6px; font:bold 13px system-ui, sans-serif; text-transform:capitalize; }
-  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:10px; }
-  .card { background:var(--bg); border:1px solid var(--line); border-left:4px solid var(--line); border-radius:6px; padding:9px 11px; font-size:14px; }
-  .card .t { display:flex; justify-content:space-between; gap:8px; font-weight:bold; }
-  .card .d { margin-top:4px; }
-  .card .b { margin-top:6px; color:var(--muted); font:12px system-ui, sans-serif; }
-  .card .v { flex:none; align-self:flex-start; font:11px system-ui, sans-serif; padding:1px 7px; border-radius:99px; border:1px solid var(--line); color:var(--ok); border-color:var(--ok); }
-  .card .v.yes { color:var(--warn); border-color:var(--warn); }
-  .card button { margin-top:7px; padding:3px 9px; font:12px system-ui, sans-serif; }
-  @media (max-width: 760px) {
-    main { grid-template-columns: 1fr; }
-    #list { max-height:none; border-right:0; border-bottom:1px solid var(--line); }
-    #detail { max-height:none; padding:14px 16px; }
-  }
+  .chip.warn { color:var(--warn); border-color:var(--warn); }
+  .summary { margin:8px 0; }
+  .why { color:var(--muted); font-style:italic; margin:6px 0; }
+  ul.kp { margin:6px 0 4px 18px; padding:0; }
+  h4 { margin:18px 0 8px; font:700 12px system-ui, sans-serif; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+  .people { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
+  .person { border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:8px; padding:11px 13px; background:var(--bg); font-size:14.5px; }
+  .person .name { font-weight:bold; font-size:16px; }
+  .person .role { color:var(--muted); font:13px system-ui, sans-serif; margin-bottom:6px; }
+  .person p { margin:6px 0; }
+  .person ul { margin:4px 0 4px 18px; padding:0; }
+  .person .lab { font:700 11px system-ui, sans-serif; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin-top:8px; }
+  .src { margin-top:8px; font:12px system-ui, sans-serif; color:var(--muted); }
+  .src a { color:var(--accent); }
+  .nopro { color:var(--muted); font:13px system-ui, sans-serif; margin-top:6px; }
+  details { margin-top:14px; font:14px system-ui, sans-serif; }
+  details summary { cursor:pointer; color:var(--muted); }
+  details p, details li { font:14px/1.5 Georgia, serif; }
+  .text { white-space:pre-wrap; max-height:260px; overflow:auto; margin-top:6px; }
+  .empty { color:var(--muted); padding:40px 0; font:15px system-ui, sans-serif; }
+  .note { color:var(--muted); font:12.5px system-ui, sans-serif; margin-top:22px; }
+  @media (max-width:600px) { h1 { font-size:32px; } .story { padding:13px 13px; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>News archive</h1>
-  <div class="bar">
-    <select id="cls" title="class"></select>
-    <select id="day" title="paper date"></select>
-    <input id="q" type="search" placeholder="Search by words or meaning (no model needed)">
-    <button id="go" class="ghost" title="search across all days of the class">Search</button>
-    <button id="all" class="ghost">Clear</button>
-  </div>
-</header>
-
-<main>
-  <aside id="list"><div class="empty">Loading...</div></aside>
-  <section id="detail">
-    <div class="ask">
-      <div class="bar">
-        <input id="question" type="text" placeholder="Ask a question about this day's news, e.g. &quot;How many votes did the candidate get?&quot;">
-        <button id="askBtn">Ask</button>
-      </div>
-      <div class="note" id="askNote">The answer uses the model on this machine: the first question takes a minute or two while it loads.</div>
-      <div id="answer" class="answer"></div>
-    </div>
-    <div id="article"><div class="empty">Choose an article on the left.</div></div>
-  </section>
-</main>
+<div class="wrap">
+  <header>
+    <h1 id="title">Sports</h1>
+    <div class="sub"><span id="paper"></span><select id="day" title="paper date"></select><select id="cls" title="section" hidden></select></div>
+  </header>
+  <nav id="topics"></nav>
+  <main id="main"><div class="empty">Loading...</div></main>
+  <p class="note">Summaries are written by a small model that reads the newspaper text. Background on people comes from Wikipedia at the time shown on each card and may be out of date. Anything marked "verify" has a number that was not found in its source.</p>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let state = { cls: "sports", day: "", items: [], searching: false };
+const cap = (s) => String(s || "").replace(/_/g, " ");
+let topics = [], current = "all";
 
-async function api(path, opts) {
-  const r = await fetch(path, opts);
+async function api(path) {
+  const r = await fetch(path);
   const j = await r.json();
   if (!r.ok || j.error) throw new Error(j.error || r.statusText);
   return j;
 }
 
-async function loadClasses() {
-  const cls = await api("/api/classes");
-  $("cls").innerHTML = (cls.length ? cls : ["sports"]).map((c) => `<option>${esc(c)}</option>`).join("");
-  state.cls = $("cls").value;
+async function init() {
+  const classes = await api("/api/classes");
+  const sel = $("cls");
+  sel.innerHTML = (classes.length ? classes : ["sports"]).map((c) => `<option>${esc(c)}</option>`).join("");
+  sel.hidden = classes.length < 2;                       // shown only when there is more than one section
   await loadDays();
 }
 
 async function loadDays() {
-  state.cls = $("cls").value;
-  const days = await api(`/api/days?class=${encodeURIComponent(state.cls)}`);
+  const cls = $("cls").value;
+  $("title").textContent = cls;
+  document.title = `${cls} news`;
+  const days = await api(`/api/days?class=${encodeURIComponent(cls)}`);
   $("day").innerHTML = days.length
-    ? days.map((d) => `<option value="${esc(d.date)}">${esc(d.date)} (${d.articles})</option>`).join("")
+    ? days.slice().reverse().map((d) => `<option value="${esc(d.date)}">${esc(d.date)}</option>`).join("")
     : `<option value="">no stored days</option>`;
-  state.day = $("day").value;
-  await loadList();
+  await loadTopics();
 }
 
-function chips(a) {
-  const out = [];
-  if (a.sport) out.push(`<span class="chip">${esc(a.sport)}</span>`);
-  if (a.story_type) out.push(`<span class="chip">${esc(a.story_type)}</span>`);
-  if (a.status) out.push(`<span class="chip">${esc(a.status)}</span>`);
-  if (a.suggestions) out.push(`<span class="chip ok">${a.suggestions} suggestions</span>`);
-  if (a.not_in_text) out.push(`<span class="chip warn" title="values not found in the article">${a.not_in_text} unchecked</span>`);
-  if (a.failed_steps?.length) out.push(`<span class="chip warn">failed: ${esc(a.failed_steps.join(", "))}</span>`);
-  return out.join("");
+async function loadTopics() {
+  const day = $("day").value;
+  current = "all";
+  if (!day) { topics = []; render(); return; }
+  topics = await api(`/api/topics?class=${encodeURIComponent($("cls").value)}&date=${day}`);
+  const first = topics[0]?.articles[0];
+  $("paper").textContent = first ? `${first.paper} (${first.edition})` : "";
+  render();
 }
 
-function renderList(items) {
-  state.items = items;
-  if (!items.length) { $("list").innerHTML = `<div class="empty">Nothing here yet. Run the pipeline for this paper first.</div>`; return; }
-  $("list").innerHTML = items.map((a) => `
-    <div class="item" data-id="${esc(a.id)}" data-date="${esc(a.paper_date)}">
-      <div class="h">${esc(a.headline)}</div>
-      <div class="m">p${a.page}${a.score ? ` · match ${a.score}` : ""} · ${esc(a.paper_date)}</div>
-      <div class="m">${esc(a.summary || a.gist)}</div>
-      <div>${chips(a)}</div>
-    </div>`).join("");
-  document.querySelectorAll(".item").forEach((el) => el.onclick = () => showArticle(el.dataset.date, el.dataset.id, el));
+function renderNav() {
+  const total = topics.reduce((n, t) => n + t.count, 0);
+  const btn = (key, label, n) => `<button data-t="${esc(key)}" class="${current === key ? "on" : ""}">${esc(label)}<span>${n}</span></button>`;
+  $("topics").innerHTML = topics.length ? btn("all", "all", total) + topics.map((t) => btn(t.name, t.name, t.count)).join("") : "";
+  $("topics").querySelectorAll("button").forEach((b) => b.onclick = () => { current = b.dataset.t; render(); window.scrollTo(0, 0); });
 }
 
-async function loadList() {
-  state.searching = false;
-  $("q").value = "";
-  if (!state.day) { renderList([]); return; }
-  renderList(await api(`/api/articles?class=${encodeURIComponent(state.cls)}&date=${state.day}`));
+function person(p) {
+  const pr = p.profile || {};
+  const facts = (p.in_article || []).map((f) => `<li>${esc(f.what)}: <b>${esc(f.value)}</b>${f.note ? ` (${esc(f.note)})` : ""}</li>`).join("");
+  const link = pr.url && pr.url.startsWith("https://en.wikipedia.org/") ? `<a href="${esc(pr.url)}" target="_blank" rel="noopener">${esc(pr.title)}</a>` : esc(pr.title || "");
+  return `<div class="person">
+    <div class="name">${esc(p.name)} ${pr.found && pr.sport ? `<span class="chip">${esc(cap(pr.sport))}</span>` : ""}</div>
+    <div class="role">${esc([p.role, p.affiliation].filter(Boolean).join(" · "))}</div>
+    ${facts ? `<div class="lab">In this news</div><ul>${facts}</ul>` : ""}
+    ${pr.found ? `
+      ${pr.background ? `<div class="lab">Background</div><p>${esc(pr.background)}</p>` : ""}
+      ${(pr.records || []).length ? `<div class="lab">Record</div><ul>${pr.records.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+      ${pr.current_status ? `<div class="lab">Now</div><p>${esc(pr.current_status)}</p>` : ""}
+      <div class="src">Source: ${link} (Wikipedia, fetched ${esc(pr.fetched)}; may be out of date)
+        ${pr.verify ? `<span class="chip warn" title="numbers not found in the source: ${esc((pr.unmatched_numbers || []).join(", "))}">verify</span>` : ""}</div>`
+    : `<div class="nopro">No background found${pr.reason ? ": " + esc(pr.reason) : ""}.</div>`}
+  </div>`;
 }
 
-async function search() {
-  const q = $("q").value.trim();
-  if (!q) return loadList();
-  state.searching = true;
-  const day = state.day ? `&date=${state.day}` : "";
-  renderList(await api(`/api/search?class=${encodeURIComponent(state.cls)}&q=${encodeURIComponent(q)}${day}`));
+function story(a) {
+  const f = a.facts || {}, m = a.meaning || {};
+  const summary = m.summary || f.gist || "";
+  const sug = (a.suggestions || []);
+  const place = [a.dateline_place, a.dateline_date].filter(Boolean).join(", ");
+  return `<article class="story">
+    <h3>${esc(a.headline)}</h3>
+    <div class="meta">${esc(a.paper)} · ${esc(a.paper_date)} · page ${a.page}${place ? " · " + esc(place) : ""}
+      ${f.competition ? ` · ${esc(f.competition)}` : ""}</div>
+    <div>${f.status ? `<span class="chip">${esc(cap(f.status))}</span>` : ""}${f.story_type ? `<span class="chip">${esc(cap(f.story_type))}</span>` : ""}
+      ${f.winner ? `<span class="chip ok">winner: ${esc(f.winner)}</span>` : ""}</div>
+    ${summary ? `<p class="summary">${esc(summary)}</p>` : `<p class="nopro">No summary yet: run understand.py for this day.</p>`}
+    ${m.why_it_matters ? `<p class="why">${esc(m.why_it_matters)}</p>` : ""}
+    ${(m.key_points || []).length ? `<ul class="kp">${m.key_points.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
+    ${(a.people || []).length ? `<h4>People in this news</h4><div class="people">${a.people.map(person).join("")}</div>` : ""}
+    ${sug.length ? `<details><summary>Suggestions (${sug.length})</summary><ul>${sug.map((s) => `<li><b>${esc(cap(s.category))}: ${esc(s.title)}.</b> ${esc(s.detail)}${s.verify ? ` <span class="chip warn">verify</span>` : ""}</li>`).join("")}</ul></details>` : ""}
+    <details><summary>Newspaper text</summary><div class="text">${esc(a.text)}</div></details>
+  </article>`;
 }
 
-async function showArticle(date, id, el) {
-  document.querySelectorAll(".item").forEach((x) => x.classList.remove("on"));
-  if (el) el.classList.add("on");
-  const a = await api(`/api/article?class=${encodeURIComponent(state.cls)}&date=${date}&id=${encodeURIComponent(id)}`);
-  const f = a.facts || {}, m = a.meaning || {}, c = a.checks || {};
-  const bad = new Set((c.not_in_text || []).map((x) => x.where));
-  const val = (where, v) => bad.has(where) ? `<span class="chip warn" title="not found in the article">${esc(v)}</span>` : esc(v);
-  const rows = (pairs) => pairs.filter((p) => p[1]).map((p) => `<tr><th>${esc(p[0])}</th><td>${p[1]}</td></tr>`).join("");
-  const parts = (f.participants || []).map((p, i) => `<tr><td>${val(`participants[${i}].name`, p.name)}</td><td>${esc(p.kind)}</td><td>${esc(p.role)}</td><td>${esc(p.affiliation)}</td></tr>`).join("");
-  const results = (f.results || []).map((r, i) => `<tr><td>${esc(r.who)}</td><td>${esc(r.what)}</td><td>${val(`results[${i}].value`, r.value)}</td><td>${esc(r.note)}</td></tr>`).join("");
-  const dates = (a.dates || []).map((d) => `<tr><td>${esc(d.what)}</td><td>${esc(d.text)}</td><td>${esc(d.date || "?")}${d.end ? " to " + esc(d.end) : ""}</td></tr>`).join("");
-  const changes = (f.changes || []).map((x) => `<tr><td>${esc(x.who)}</td><td>${esc(x.change)}</td><td>${esc(x.detail)}</td></tr>`).join("");
-  const quotes = (f.quotes || []).map((q) => `<p><strong>${esc(q.speaker)}:</strong> “${esc(q.quote)}”</p>`).join("");
-  const notes = (c.not_in_text || []).map((x) => `<li>${esc(x.where)} = “${esc(x.value)}”</li>`).join("");
-  $("article").innerHTML = `
-    <h2>${esc(a.headline)}</h2>
-    <div class="meta">${esc(a.paper)} (${esc(a.edition)}) · ${esc(a.paper_date)} · page ${a.page} · ${esc(a.dateline_place || "")} ${esc(a.dateline_date || "")} ${a.agency ? "· " + esc(a.agency) : ""}</div>
-    ${m.summary ? `<div class="box"><h3>What it means (${esc(m.status || "")})</h3><p>${esc(m.summary)}</p>
-      ${m.why_it_matters ? `<p><em>Why it matters:</em> ${esc(m.why_it_matters)}</p>` : ""}
-      ${(m.key_points || []).length ? `<ul>${m.key_points.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
-      <div>${(m.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div></div>` : `<div class="box"><h3>Meaning</h3><p class="note">Not written yet: run understand.py for this day.</p></div>`}
-    <div id="sug"></div>
-    <div class="box"><h3>The sport</h3><table>${rows([
-      ["Sport", esc(f.sport)], ["How it works", esc(f.how_it_works)], ["Contest", esc(f.contest_type)],
-      ["Winner", esc(f.winner)], ["Result", esc(f.result_summary)], ["Story", esc(f.story_type)]])}</table></div>
-    <div class="box"><h3>Event</h3><table>${rows([
-      ["Competition", esc(f.competition)], ["Discipline", esc(f.discipline)], ["Category", esc(f.category)],
-      ["Stage", esc(f.stage)], ["Venue", esc(f.venue)], ["Place", esc([f.city, f.country].filter(Boolean).join(", "))]])}</table></div>
-    ${parts ? `<div class="box"><h3>People and teams</h3><table><tr><th>Name</th><th>Kind</th><th>Role</th><th>Affiliation</th></tr>${parts}</table></div>` : ""}
-    ${results ? `<div class="box"><h3>Figures</h3><table><tr><th>Who</th><th>What</th><th>Value</th><th>Note</th></tr>${results}</table></div>` : ""}
-    ${dates ? `<div class="box"><h3>Dates</h3><table><tr><th>What</th><th>As written</th><th>Day</th></tr>${dates}</table></div>` : ""}
-    ${changes ? `<div class="box"><h3>Changes</h3><table>${changes}</table></div>` : ""}
-    ${quotes ? `<div class="box"><h3>Quotes</h3>${quotes}</div>` : ""}
-    ${(f.upcoming || []).length ? `<div class="box"><h3>Coming up</h3><ul>${f.upcoming.map((u) => `<li>${esc(u.what)} · ${esc(u.date_text)} · ${esc(u.where)}</li>`).join("")}</ul></div>` : ""}
-    ${notes ? `<div class="box"><h3>Not found in the article (check these)</h3><ul>${notes}</ul></div>` : ""}
-    <div class="box"><h3>Text</h3><div class="text">${esc(a.text)}</div></div>`;
-  sugFilter = "all";
-  renderSuggestions(a);
-}
-
-// Suggestions: grouped cards like the medical ones. "verify" = uses general knowledge or a number not in the article.
-let sugFilter = "all";
-const hue = (s) => { let h = 0; for (const c of s || "") h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const catColor = (c) => `hsl(${hue(c)} 55% 50%)`;
-
-function renderSuggestions(a) {
-  const el = $("sug");
-  const all = a.suggestions || [];
-  if (!all.length) {
-    el.innerHTML = `<div class="box"><h3>Suggestions</h3><p class="note">None yet: run suggest.py for this day.</p></div>`;
-    return;
-  }
-  const nVerify = all.filter((s) => s.verify).length;
-  const shown = all.map((s, i) => ({ ...s, n: i + 1 }))
-    .filter((s) => sugFilter === "all" || (sugFilter === "verify" ? s.verify : !s.verify));
-  const groups = new Map();
-  for (const s of shown) {
-    const c = s.category || "other";
-    if (!groups.has(c)) groups.set(c, []);
-    groups.get(c).push(s);
-  }
-  const filters = [["all", `All ${all.length}`], ["article", `From the article ${all.length - nVerify}`], ["verify", `Needs verifying ${nVerify}`]]
-    .map(([k, label]) => `<button data-f="${k}" class="${sugFilter === k ? "on" : ""}">${label}</button>`).join("");
-  const cats = [...groups].map(([cat, items]) => `
-    <div class="cat"><h4><span class="swatch" style="background:${catColor(cat)}"></span>${esc(cat.replace(/_/g, " "))} <span class="note">${items.length}</span></h4>
-      <div class="cards">${items.map((s) => `
-        <div class="card" style="border-left-color:${catColor(cat)}">
-          <div class="t"><span><span class="note">#${s.n}</span> ${esc(s.title)}</span>
-            <span class="v ${s.verify ? "yes" : ""}">${s.verify ? "verify" : "from the article"}</span></div>
-          <div class="d">${esc(s.detail)}</div>
-          ${s.based_on ? `<div class="b">based on: ${esc(s.based_on)}</div>` : ""}
-          ${(s.unmatched_numbers || []).length ? `<div class="b">numbers not found in the article: ${esc(s.unmatched_numbers.join(", "))}</div>` : ""}
-          <button class="ghost" data-ask="${esc(s.title)}">Ask about this</button>
-        </div>`).join("")}</div></div>`).join("");
-  el.innerHTML = `<div class="box"><h3>Suggestions</h3><div class="filters">${filters}</div>${cats}
-    <p class="note">Written by a small local model from the facts above. Anything marked "verify" uses general knowledge: check it before relying on it.</p></div>`;
-  el.querySelectorAll(".filters button").forEach((b) => b.onclick = () => { sugFilter = b.dataset.f; renderSuggestions(a); });
-  el.querySelectorAll("[data-ask]").forEach((b) => b.onclick = () => {
-    $("question").value = `${b.dataset.ask} (${a.headline})`; $("question").focus(); window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-}
-
-async function ask() {
-  const question = $("question").value.trim();
-  if (!question) return;
-  $("askBtn").disabled = true;
-  $("answer").innerHTML = `<p class="note">Thinking... (the model runs on this machine)</p>`;
-  try {
-    const r = await api("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, class: state.cls, date: state.day }) });
-    const src = (r.sources || []).map((s) => `<li><a href="#" data-date="${esc(s.paper_date)}" data-id="${esc(s.id)}">${esc(s.headline)}</a> <span class="note">${esc(s.paper_date)}, p${s.page}</span></li>`).join("");
-    $("answer").innerHTML = `<div class="box"><h3>${r.found === "yes" ? "Answer" : "Not in the stored news"}</h3>
-      <p>${esc(r.answer)}</p>
-      ${r.evidence ? `<p class="note">Evidence: “${esc(r.evidence)}” ${r.evidence_in_article ? "(found in the article)" : "(not found word for word: check it)"}</p>` : ""}
-      ${src ? `<p class="note">Sources</p><ul>${src}</ul>` : ""}
-      <p class="note">${r.given ? `Looked at ${r.given.length} article(s) in ${r.seconds}s.` : ""}</p></div>`;
-    document.querySelectorAll("#answer a[data-id]").forEach((a) => a.onclick = (e) => {
-      e.preventDefault(); showArticle(a.dataset.date, a.dataset.id, null); });
-  } catch (e) {
-    $("answer").innerHTML = `<p class="note">Could not answer: ${esc(e.message)}</p>`;
-  } finally {
-    $("askBtn").disabled = false;
-  }
+function render() {
+  renderNav();
+  if (!topics.length) { $("main").innerHTML = `<div class="empty">Nothing stored for this day yet. Run the pipeline first.</div>`; return; }
+  const shown = current === "all" ? topics : topics.filter((t) => t.name === current);
+  $("main").innerHTML = shown.map((t) => `<section><h2 class="topic">${esc(t.name)}</h2>${t.articles.map(story).join("")}</section>`).join("");
 }
 
 $("cls").onchange = loadDays;
-$("day").onchange = loadList;
-$("go").onclick = search;
-$("q").onkeydown = (e) => { if (e.key === "Enter") search(); };
-$("all").onclick = loadList;
-$("askBtn").onclick = ask;
-$("question").onkeydown = (e) => { if (e.key === "Enter") ask(); };
-loadClasses().catch((e) => { $("list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; });
+$("day").onchange = loadTopics;
+init().catch((e) => { $("main").innerHTML = `<div class="empty">${esc(e.message)}</div>`; });
 </script>
 </body>
 </html>

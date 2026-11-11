@@ -44,7 +44,13 @@ python news/show.py --date 2026-11-11 --article statesman-delhi-20261111-p13-02
 # 4b suggestions: grouped cards of what a reader may want to know or follow
 python news/suggest.py --date 2026-11-11
 
-# 5 search index, then questions
+# 4c people: background and record of the people named, from Wikipedia (needs internet)
+python news/people.py --date 2026-11-11
+
+# the page: Sports header, a topic per sport, summaries, and the people's profiles
+python news/ui_server.py                                   # http://localhost:8001
+
+# 5 search index, then questions (optional, not used by the page)
 python news/search_index.py --date 2026-11-11
 python news/ask.py "Why was the third ODI in Hamilton not played?"
 python news/ask.py "How many votes did PT Usha get?" --date 2026-11-10
@@ -62,6 +68,7 @@ Or all steps at once: `python news/pipeline.py "news/papers/The Statesman_Delhi_
 | 3 | `extract.py` | no | Drops empty items. Looks every name and value up in the article (misses go to `checks.not_in_text`, nothing is deleted). Turns each written date ("Tuesday", "November 13 and 15") into a real day counted from the dateline. |
 | 4 | `understand.py` + `8_meaning.txt` | 1 call | Summary, why it matters, happened/expected, key points, tags, and the questions the article answers. Only checked facts are given to it. |
 | 4b | `suggest.py` + `10_suggestions.txt` | 1 call | Up to 10 suggestion cards per article, grouped by category (summary, understand terms, background, people to know, what next, follow the story). Each gives the fact it is based on, and a `verify` flag. Code checks every number in a suggestion against the article; a number not found marks it `verify`. The UI shows them as colour-coded groups with filters. |
+| 4c | `people.py` + `11_person_profile.txt` | 1 call per person | For each person named in full (up to 4 per article): code looks them up on Wikipedia and keeps the page only if the title matches the name and it reads like a sports person. The model summarises that page's opening text only: sport, background, records, current status. Code checks the numbers against the page. No page, no profile (nothing is guessed). Needs internet. |
 | 5 | `search_index.py`, `ask.py` + `9_answer.txt` | 1 call per question | Filters to the day asked about. Ranks articles by keyword + meaning. The model answers only from the top 3, citing them. Code checks the cited articles and the evidence phrase. |
 
 Shared code: `config.py` (paths, page labels), `llm.py` (the model, adapted from the travel branch's

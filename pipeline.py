@@ -36,6 +36,7 @@ def main():
     a = ap.parse_args()
 
     import extract
+    import people
     import search_index
     import split_pdf
     import suggest
@@ -59,6 +60,8 @@ def main():
     understand.run(day, a.cls, limit=a.limit, force=a.force)
     print(f"\n== Step 4b: suggestions")
     suggest.run(day, a.cls, limit=a.limit, force=a.force)
+    print(f"\n== Step 4c: people")
+    people.run(day, a.cls, limit=a.limit, force=a.force)
     print(f"\n== Step 5: search index")
     search_index.build(day, a.cls)
     print(f"\nDone in {time.time() - t0:.0f}s. Look:  python news/show.py --date {day}")

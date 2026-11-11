@@ -1,0 +1,12 @@
+# News pipeline (graphrag/news). Install into the repo's venv:
+#   .\venv\Scripts\Activate.ps1
+#   pip install -r news/requirements.txt
+pymupdf>=1.24            # reads the newspaper PDF (import name: fitz)
+transformers>=5.0        # runs Qwen3.5-0.8B locally
+torch                    # CPU build is fine
+pillow
+json_repair              # mends the small model's broken JSON
+python-dateutil
+huggingface_hub          # download_models.py
+sentence-transformers    # search vectors (step 5); optional, without it search is keyword-only
+# ollama                 # only if NEWS_BACKEND=ollama

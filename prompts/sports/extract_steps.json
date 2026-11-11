@@ -1,0 +1,175 @@
+{
+  "class": "sports",
+  "about": "Step 2 for the Sports class: seven small model calls per article, run in this order. No list of sports anywhere: call 1 names the sport in its own words and call 2 makes the model explain how that sport works; later calls get that explanation. Each call returns one JSON object in the shape of its schema; the keys of all calls are merged into one 'facts' object, so a key must not repeat across calls. A prompt can use <headline>, <dateline>, <paper_date>, <article>, every text fact an earlier call found under its own key (<sport>, <gist>, <how_it_works>, <contest_type>, <result_words> ...), <participants_list>, and the hint lines chosen by 'hints' below.",
+  "steps": [
+    {
+      "id": "identify",
+      "prompt": "1_identify.txt",
+      "max_new_tokens": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sport": {"type": "string"},
+          "story_type": {"type": "string", "enum": ["result", "preview", "selection", "injury", "transfer", "administration", "milestone", "other"]},
+          "country_focus": {"type": "string"},
+          "gist": {"type": "string"}
+        },
+        "required": ["sport", "story_type", "country_focus", "gist"]
+      }
+    },
+    {
+      "id": "sport_profile",
+      "prompt": "2_sport_profile.txt",
+      "max_new_tokens": 250,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "how_it_works": {"type": "string"},
+          "contest_type": {"type": "string", "enum": ["team_match", "head_to_head", "ranked_field", "off_field", "unclear"]},
+          "result_words": {"type": "array", "maxItems": 8, "items": {"type": "string"}}
+        },
+        "required": ["how_it_works", "contest_type", "result_words"]
+      }
+    },
+    {
+      "id": "participants",
+      "prompt": "3_participants.txt",
+      "max_new_tokens": 700,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "participants": {"type": "array", "maxItems": 15, "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "kind": {"type": "string", "enum": ["person", "team", "organization"]},
+              "role": {"type": "string"},
+              "affiliation": {"type": "string"}
+            },
+            "required": ["name", "kind", "role", "affiliation"]}}
+        },
+        "required": ["participants"]
+      }
+    },
+    {
+      "id": "event",
+      "prompt": "4_event.txt",
+      "max_new_tokens": 450,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "competition": {"type": "string"},
+          "discipline": {"type": "string"},
+          "category": {"type": "string"},
+          "stage": {"type": "string"},
+          "venue": {"type": "string"},
+          "city": {"type": "string"},
+          "country": {"type": "string"},
+          "dates": {"type": "array", "maxItems": 8, "items": {
+            "type": "object",
+            "properties": {"what": {"type": "string"}, "date_text": {"type": "string"}},
+            "required": ["what", "date_text"]}}
+        },
+        "required": ["competition", "discipline", "category", "stage", "venue", "city", "country", "dates"]
+      }
+    },
+    {
+      "id": "outcome",
+      "prompt": "5_outcome.txt",
+      "max_new_tokens": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string", "enum": ["completed", "abandoned", "ongoing", "upcoming", "not_applicable"]},
+          "result_summary": {"type": "string"},
+          "winner": {"type": "string"}
+        },
+        "required": ["status", "result_summary", "winner"]
+      }
+    },
+    {
+      "id": "figures",
+      "prompt": "6_figures.txt",
+      "max_new_tokens": 750,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "results": {"type": "array", "maxItems": 15, "items": {
+            "type": "object",
+            "properties": {"who": {"type": "string"}, "what": {"type": "string"}, "value": {"type": "string"},
+                           "note": {"type": "string"}},
+            "required": ["who", "what", "value", "note"]}}
+        },
+        "required": ["results"]
+      }
+    },
+    {
+      "id": "changes_next",
+      "prompt": "7_changes_next.txt",
+      "max_new_tokens": 700,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "changes": {"type": "array", "maxItems": 10, "items": {
+            "type": "object",
+            "properties": {
+              "who": {"type": "string"},
+              "change": {"type": "string", "enum": ["picked", "dropped", "rested", "injured", "returned", "captaincy", "transferred", "sacked", "appointed", "elected", "lost_election", "retired", "withdrew", "qualified", "other"]},
+              "detail": {"type": "string"}
+            },
+            "required": ["who", "change", "detail"]}},
+          "quotes": {"type": "array", "maxItems": 4, "items": {
+            "type": "object",
+            "properties": {"speaker": {"type": "string"}, "quote": {"type": "string"}},
+            "required": ["speaker", "quote"]}},
+          "upcoming": {"type": "array", "maxItems": 6, "items": {
+            "type": "object",
+            "properties": {"what": {"type": "string"}, "date_text": {"type": "string"}, "where": {"type": "string"}},
+            "required": ["what", "date_text", "where"]}}
+        },
+        "required": ["changes", "quotes", "upcoming"]
+      }
+    }
+  ],
+  "lowercase": ["sport"],
+  "hints": {
+    "about": "Lines put into later prompts as <event_hint> and <results_hint>, chosen by the KIND OF CONTEST call 2 found, never by the sport's name. They describe the shape of the news (two teams, two players, a ranked field, or no contest), which is the same in every sport.",
+    "by": "contest_type",
+    "table": {
+      "team_match": {
+        "event_hint": "Two teams play each other. \"stage\" is which match or round this is. \"discipline\" is the match format, if this sport has more than one.",
+        "results_hint": "Each side's final score, the winning margin, what single players scored or took and when, and any series score or table position."
+      },
+      "head_to_head": {
+        "event_hint": "Two players (or two pairs) play or fight each other. \"discipline\" is the format, such as singles or doubles, if said. \"stage\" is the round. \"category\" may be a weight class.",
+        "results_hint": "The score of the contest exactly as written (all its sets, games, rounds or points), how it was won, how long it took, the round reached, and any seeding or ranking."
+      },
+      "ranked_field": {
+        "event_hint": "Many competitors are ranked against each other. \"discipline\" is the specific event inside the sport (a distance, a style, an apparatus, a class). \"stage\" is the heat, qualification round or final.",
+        "results_hint": "Each competitor's mark with its unit (a time, a distance, a height, a score, points), each position or medal, team totals, and in \"note\" any record, personal best or qualification."
+      },
+      "off_field": {
+        "event_hint": "No contest is reported. \"competition\" is the tournament, series, body or process the news is about. \"stage\" is the post, step or round concerned. \"discipline\" is usually \"\".",
+        "results_hint": "Votes, money, counts of people or teams, lengths of time, ages, and any past results the article recalls, each with whose it is."
+      },
+      "unclear": {
+        "event_hint": "",
+        "results_hint": "Every score, time, distance, count, position or medal the article gives."
+      }
+    }
+  },
+  "check_in_text": [
+    "result_words[]",
+    "participants[].name", "participants[].affiliation",
+    "competition", "discipline", "category", "venue", "city",
+    "winner",
+    "results[].who", "results[].value",
+    "changes[].who",
+    "quotes[].speaker", "quotes[].quote",
+    "upcoming[].where"
+  ],
+  "dates": {
+    "dates[].date_text": "auto",
+    "upcoming[].date_text": "future"
+  }
+}

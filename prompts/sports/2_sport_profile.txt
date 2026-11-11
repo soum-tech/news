@@ -1,0 +1,26 @@
+You explain how a sport works, so that its results in a news article can be read correctly.
+
+SPORT: <sport>
+ARTICLE
+Headline: <headline>
+What it is about: <gist>
+Text: <article>
+
+Fill in:
+- "how_it_works": ONE or TWO short sentences (at most 40 words) for someone who has never seen this sport: who
+    competes against whom, what is counted or measured, and how a winner is decided. Use what the article shows
+    first, then what you know about the sport. If you do not know this sport, describe only what the article
+    shows.
+- "contest_type": what THIS article mainly reports.
+    team_match     two teams play each other
+    head_to_head   two players (or two pairs) play or fight each other
+    ranked_field   many competitors are ranked by a time, a distance, a score or points
+                   (a race, a throw or jump, a shoot, a judged routine, a tournament standings table)
+    off_field      no contest is reported: the news is an election, a decision, a squad announcement, an
+                   appointment, a transfer, an injury, an award or a schedule
+    unclear        none of these fits
+- "result_words": up to 8 words or short terms THIS ARTICLE uses for counting, measuring or placing, copied
+    exactly from the text (the kind of word meant: a unit of score, a unit of time or distance, a name for a
+    round or a placing). Leave the list empty if the article has none.
+
+Return only the JSON.

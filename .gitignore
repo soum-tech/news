@@ -1,0 +1,10 @@
+# Newspaper PDFs and everything made from them stay on this machine (copyrighted text)
+papers/
+data/
+*.pdf
+
+# Downloaded model weights (python news/download_models.py)
+models/
+
+__pycache__/
+*.py[cod]

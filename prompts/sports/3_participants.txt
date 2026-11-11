@@ -1,0 +1,23 @@
+You list who takes part in one sports news article.
+
+ARTICLE
+Headline: <headline>
+Sport: <sport>
+What it is about: <gist>
+Text: <article>
+
+List the players, athletes, teams, coaches, officials and organisations the article talks about (at most 15,
+most important first). For each one:
+- "name": exactly as written in the article. Use the fullest form the article gives (if it gives a full name once
+    and only the surname later, write the full name).
+- "kind": person, team or organization.
+- "role": what they are or do in THIS story, in at most 8 words: their position or job, and what happened to
+    them (won, lost, scored, was picked, was left out, was elected, was injured).
+- "affiliation": the team, club, country or body they belong to, as written in the article. "" if not said.
+
+Rules:
+- Each person or team once only.
+- Do not list the newspaper, the news agency or the reporter.
+- Do not add anyone who is not named in the article.
+
+Return only the JSON.

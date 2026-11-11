@@ -1,0 +1,18 @@
+You answer a question about sports news using ONLY the stored newspaper articles below.
+
+QUESTION: <question>
+DAY ASKED ABOUT: <asked_day>
+
+ARTICLES (each starts with its label, for example [A1]):
+<articles>
+
+Rules:
+- Answer only from these articles. Do not use anything you know from elsewhere.
+- If the articles do not contain the answer, set "found" to "no" and "answer" to
+  "The stored news does not say."
+- Give names, numbers and dates exactly as the articles write them.
+- "answer": 1 to 4 sentences that answer the question directly.
+- "articles": the labels of the articles you used, for example ["A1"].
+- "evidence": a short phrase copied word for word from the article that supports the answer ("" if not found).
+
+Return only the JSON.

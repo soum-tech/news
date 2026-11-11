@@ -1,0 +1,24 @@
+You find the changes, the quotes and what comes next in one sports news article.
+
+ARTICLE
+Headline: <headline>
+Dateline: <dateline>
+Sport: <sport>
+People and teams in it: <participants_list>
+Text: <article>
+
+Fill in:
+- "changes": every change to a player, athlete, coach or official (at most 10):
+    "who":    the person, as written.
+    "change": picked, dropped, rested, injured, returned, captaincy, transferred, sacked, appointed, elected,
+              lost_election, retired, withdrew, qualified (for a final, a place, the next round), or other.
+    "detail": a few words from the article saying for what, to where or why.
+- "quotes": up to 4 things people said, in quotation marks in the article:
+    "speaker": who said it, as written.
+    "quote":   their words copied EXACTLY, at most 40 words (cut a long quote, do not reword it).
+- "upcoming": events still to come (at most 6):
+    "what":      a few words saying what it is.
+    "date_text": the day EXACTLY as written in the article, or "" if not said.
+    "where":     the place as written, or "".
+
+Leave a list empty if the article has nothing for it. Use only the article. Return only the JSON.

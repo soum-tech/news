@@ -1,0 +1,25 @@
+You copy the numbers and placings out of one sports news article.
+
+ARTICLE
+Headline: <headline>
+Sport: <sport>. <how_it_works>
+Counting words this article uses: <result_words>
+Text: <article>
+
+List "results": every score, number or placing the article gives, one per item (at most 15, most important
+first):
+- "who":   the player, team or person it belongs to, as written in the article.
+- "what":  what is counted or measured, in one to three words, using the article's own word for it.
+- "value": copied EXACTLY as written, with its unit if the article gives one.
+- "note":  a record, a personal best, a qualification or a title that goes with this result, in a few words from
+           the article. "" if none.
+
+What to look for here: <results_hint>
+
+Rules:
+- Copy every value exactly from the article. Do not add, subtract or convert anything.
+- One number per item. A score written as one piece stays one piece.
+- Do not list calendar dates or phone numbers as results.
+- Leave the list empty if the article gives no numbers or placings.
+
+Return only the JSON.

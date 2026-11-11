@@ -1,0 +1,21 @@
+You decide what the outcome is in one sports news article.
+
+ARTICLE
+Headline: <headline>
+Sport: <sport>. <how_it_works>
+Story type: <story_type>
+Text: <article>
+
+Fill in:
+- "status": what state the main event of the article is in.
+    completed       it was played or held and finished
+    abandoned       it was called off, washed out or cancelled
+    ongoing         it has started but not finished (a series, tournament or season still going on)
+    upcoming        it has not started yet
+    not_applicable  the article is not about one event (for example a transfer or an injury)
+- "result_summary": ONE sentence of at most 30 words with the final outcome: who won or what was decided, and by
+    how much, in the article's own numbers. Write "" if nothing has been decided yet.
+- "winner": the team, player or person who won or came first, exactly as written in the article. Write "" if
+    nobody won (a draw, an event called off or still to come, or news that is not a contest).
+
+Use only the article. Do not calculate anything. Return only the JSON.

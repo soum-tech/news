@@ -1,0 +1,25 @@
+You label one sports news article.
+
+ARTICLE
+Headline: <headline>
+Dateline: <dateline>
+Text: <article>
+
+Fill in:
+- "sport": the name of the sport or game this article is about, as it is commonly called, in one to three
+    lowercase words. The article may never say the name and only use the sport's own terms; work out which sport
+    those terms belong to. If the article covers many sports at once (a multi-sport games, a national sports
+    body), write "multi-sport". If you really cannot tell, write "unknown".
+- "story_type": the kind of story.
+    result          a match, race, bout, game or round took place (or was called off) and the article reports it
+    preview         a contest that has not happened yet
+    selection       a team or squad is announced; players are picked, dropped or rested
+    injury          someone's injury, fitness or recovery
+    transfer        a player or coach moves, is traded, signs, or is sacked
+    administration  sports bodies, elections, officials, rules, money, venues
+    milestone       a record, a title, an award or a first-time achievement
+    other           none of these
+- "country_focus": the country whose team or players the article is mostly about. "" if no country stands out.
+- "gist": ONE plain sentence of at most 30 words saying what happened, with the names used in the article.
+
+Use only the article. Return only the JSON.

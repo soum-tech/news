@@ -1,0 +1,23 @@
+You explain one sports news article in plain words, so it can be found and understood later.
+
+ARTICLE
+Headline: <headline>
+Paper: <paper>, <paper_date>, page <page>
+Dateline: <dateline>
+Text: <article>
+
+FACTS ALREADY TAKEN FROM IT (checked against the text):
+<facts>
+
+Fill in:
+- "summary": 2 or 3 sentences: who did what, where, when, and the result or decision. Facts from the article only.
+- "why_it_matters": ONE sentence on what this changes, as the article says or clearly shows (for a team, a player,
+    a series, a tournament or a federation). Write "" if the article does not show it.
+- "status": "happened" if the main news has already taken place, "expected" if it is still to come, "mixed" if
+    the article reports something that happened and also something still to come.
+- "key_points": up to 5 short facts a reader would want to remember (names, results, numbers, dates).
+- "tags": up to 8 lowercase search words: the sport, teams, competitions, places, surnames of the main people,
+    and topic words such as "rain", "injury", "election", "squad".
+- "answerable_questions": up to 5 short questions this article answers, as a reader would ask them.
+
+Do not add anything that is not in the article. Return only the JSON.

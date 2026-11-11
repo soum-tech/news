@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>News archive</title>
+<style>
+  :root { --bg:#f6f5f2; --panel:#ffffff; --ink:#1d1d1b; --muted:#6b6a64; --line:#e2dfd8; --accent:#8a1c1c; --ok:#2d6a3e; --warn:#9a5b00; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#161614; --panel:#1f1f1c; --ink:#ece9e1; --muted:#9b988f; --line:#33322e; --accent:#e07a7a; --ok:#7fc08f; --warn:#e0b070; }
+  }
+  :root[data-theme="dark"] { --bg:#161614; --panel:#1f1f1c; --ink:#ece9e1; --muted:#9b988f; --line:#33322e; --accent:#e07a7a; --ok:#7fc08f; --warn:#e0b070; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 Georgia, "Times New Roman", serif; }
+  header { padding:14px 16px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:2; }
+  h1 { margin:0 0 8px; font-size:20px; letter-spacing:.01em; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  select, input, button { font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
+  input[type=search] { flex:1 1 220px; min-width:0; }
+  button { cursor:pointer; background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.ghost { background:transparent; color:var(--ink); border-color:var(--line); }
+  main { display:grid; grid-template-columns: minmax(260px, 380px) 1fr; gap:0; min-height:calc(100vh - 110px); }
+  #list { border-right:1px solid var(--line); overflow:auto; max-height:calc(100vh - 110px); }
+  #detail { padding:18px 22px; overflow:auto; max-height:calc(100vh - 110px); }
+  .item { padding:11px 14px; border-bottom:1px solid var(--line); cursor:pointer; }
+  .item:hover, .item.on { background:var(--panel); }
+  .item .h { font-weight:bold; font-size:15px; }
+  .item .m { color:var(--muted); font-size:12.5px; margin-top:3px; }
+  .chip { display:inline-block; font:12px system-ui, sans-serif; padding:1px 7px; margin:2px 3px 0 0; border:1px solid var(--line); border-radius:99px; color:var(--muted); }
+  .chip.warn { color:var(--warn); border-color:var(--warn); }
+  .chip.ok { color:var(--ok); border-color:var(--ok); }
+  h2 { font-size:22px; margin:4px 0 6px; line-height:1.25; }
+  .meta { color:var(--muted); font:13px system-ui, sans-serif; margin-bottom:14px; }
+  .box { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin:12px 0; }
+  .box h3 { margin:0 0 6px; font:bold 12px system-ui, sans-serif; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font:14px system-ui, sans-serif; }
+  td, th { text-align:left; padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:normal; }
+  .text { white-space:pre-wrap; font-size:14.5px; max-height:280px; overflow:auto; }
+  .ask { margin:0 0 14px; padding:12px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  .ask .bar input { flex:1 1 300px; }
+  .answer { margin-top:10px; }
+  .note { color:var(--muted); font:13px system-ui, sans-serif; }
+  .empty { color:var(--muted); padding:30px 16px; font:14px system-ui, sans-serif; }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    #list { max-height:none; border-right:0; border-bottom:1px solid var(--line); }
+    #detail { max-height:none; padding:14px 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>News archive</h1>
+  <div class="bar">
+    <select id="cls" title="class"></select>
+    <select id="day" title="paper date"></select>
+    <input id="q" type="search" placeholder="Search by words or meaning (no model needed)">
+    <button id="go" class="ghost" title="search across all days of the class">Search</button>
+    <button id="all" class="ghost">Clear</button>
+  </div>
+</header>
+
+<main>
+  <aside id="list"><div class="empty">Loading...</div></aside>
+  <section id="detail">
+    <div class="ask">
+      <div class="bar">
+        <input id="question" type="text" placeholder="Ask a question about this day's news, e.g. &quot;How many votes did the candidate get?&quot;">
+        <button id="askBtn">Ask</button>
+      </div>
+      <div class="note" id="askNote">The answer uses the model on this machine: the first question takes a minute or two while it loads.</div>
+      <div id="answer" class="answer"></div>
+    </div>
+    <div id="article"><div class="empty">Choose an article on the left.</div></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let state = { cls: "sports", day: "", items: [], searching: false };
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+async function loadClasses() {
+  const cls = await api("/api/classes");
+  $("cls").innerHTML = (cls.length ? cls : ["sports"]).map((c) => `<option>${esc(c)}</option>`).join("");
+  state.cls = $("cls").value;
+  await loadDays();
+}
+
+async function loadDays() {
+  state.cls = $("cls").value;
+  const days = await api(`/api/days?class=${encodeURIComponent(state.cls)}`);
+  $("day").innerHTML = days.length
+    ? days.map((d) => `<option value="${esc(d.date)}">${esc(d.date)} (${d.articles})</option>`).join("")
+    : `<option value="">no stored days</option>`;
+  state.day = $("day").value;
+  await loadList();
+}
+
+function chips(a) {
+  const out = [];
+  if (a.sport) out.push(`<span class="chip">${esc(a.sport)}</span>`);
+  if (a.story_type) out.push(`<span class="chip">${esc(a.story_type)}</span>`);
+  if (a.status) out.push(`<span class="chip">${esc(a.status)}</span>`);
+  if (a.not_in_text) out.push(`<span class="chip warn" title="values not found in the article">${a.not_in_text} unchecked</span>`);
+  if (a.failed_steps?.length) out.push(`<span class="chip warn">failed: ${esc(a.failed_steps.join(", "))}</span>`);
+  return out.join("");
+}
+
+function renderList(items) {
+  state.items = items;
+  if (!items.length) { $("list").innerHTML = `<div class="empty">Nothing here yet. Run the pipeline for this paper first.</div>`; return; }
+  $("list").innerHTML = items.map((a) => `
+    <div class="item" data-id="${esc(a.id)}" data-date="${esc(a.paper_date)}">
+      <div class="h">${esc(a.headline)}</div>
+      <div class="m">p${a.page}${a.score ? ` · match ${a.score}` : ""} · ${esc(a.paper_date)}</div>
+      <div class="m">${esc(a.summary || a.gist)}</div>
+      <div>${chips(a)}</div>
+    </div>`).join("");
+  document.querySelectorAll(".item").forEach((el) => el.onclick = () => showArticle(el.dataset.date, el.dataset.id, el));
+}
+
+async function loadList() {
+  state.searching = false;
+  $("q").value = "";
+  if (!state.day) { renderList([]); return; }
+  renderList(await api(`/api/articles?class=${encodeURIComponent(state.cls)}&date=${state.day}`));
+}
+
+async function search() {
+  const q = $("q").value.trim();
+  if (!q) return loadList();
+  state.searching = true;
+  const day = state.day ? `&date=${state.day}` : "";
+  renderList(await api(`/api/search?class=${encodeURIComponent(state.cls)}&q=${encodeURIComponent(q)}${day}`));
+}
+
+async function showArticle(date, id, el) {
+  document.querySelectorAll(".item").forEach((x) => x.classList.remove("on"));
+  if (el) el.classList.add("on");
+  const a = await api(`/api/article?class=${encodeURIComponent(state.cls)}&date=${date}&id=${encodeURIComponent(id)}`);
+  const f = a.facts || {}, m = a.meaning || {}, c = a.checks || {};
+  const bad = new Set((c.not_in_text || []).map((x) => x.where));
+  const val = (where, v) => bad.has(where) ? `<span class="chip warn" title="not found in the article">${esc(v)}</span>` : esc(v);
+  const rows = (pairs) => pairs.filter((p) => p[1]).map((p) => `<tr><th>${esc(p[0])}</th><td>${p[1]}</td></tr>`).join("");
+  const parts = (f.participants || []).map((p, i) => `<tr><td>${val(`participants[${i}].name`, p.name)}</td><td>${esc(p.kind)}</td><td>${esc(p.role)}</td><td>${esc(p.affiliation)}</td></tr>`).join("");
+  const results = (f.results || []).map((r, i) => `<tr><td>${esc(r.who)}</td><td>${esc(r.what)}</td><td>${val(`results[${i}].value`, r.value)}</td><td>${esc(r.note)}</td></tr>`).join("");
+  const dates = (a.dates || []).map((d) => `<tr><td>${esc(d.what)}</td><td>${esc(d.text)}</td><td>${esc(d.date || "?")}${d.end ? " to " + esc(d.end) : ""}</td></tr>`).join("");
+  const changes = (f.changes || []).map((x) => `<tr><td>${esc(x.who)}</td><td>${esc(x.change)}</td><td>${esc(x.detail)}</td></tr>`).join("");
+  const quotes = (f.quotes || []).map((q) => `<p><strong>${esc(q.speaker)}:</strong> “${esc(q.quote)}”</p>`).join("");
+  const notes = (c.not_in_text || []).map((x) => `<li>${esc(x.where)} = “${esc(x.value)}”</li>`).join("");
+  $("article").innerHTML = `
+    <h2>${esc(a.headline)}</h2>
+    <div class="meta">${esc(a.paper)} (${esc(a.edition)}) · ${esc(a.paper_date)} · page ${a.page} · ${esc(a.dateline_place || "")} ${esc(a.dateline_date || "")} ${a.agency ? "· " + esc(a.agency) : ""}</div>
+    ${m.summary ? `<div class="box"><h3>What it means (${esc(m.status || "")})</h3><p>${esc(m.summary)}</p>
+      ${m.why_it_matters ? `<p><em>Why it matters:</em> ${esc(m.why_it_matters)}</p>` : ""}
+      ${(m.key_points || []).length ? `<ul>${m.key_points.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
+      <div>${(m.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div></div>` : `<div class="box"><h3>Meaning</h3><p class="note">Not written yet: run understand.py for this day.</p></div>`}
+    <div class="box"><h3>The sport</h3><table>${rows([
+      ["Sport", esc(f.sport)], ["How it works", esc(f.how_it_works)], ["Contest", esc(f.contest_type)],
+      ["Winner", esc(f.winner)], ["Result", esc(f.result_summary)], ["Story", esc(f.story_type)]])}</table></div>
+    <div class="box"><h3>Event</h3><table>${rows([
+      ["Competition", esc(f.competition)], ["Discipline", esc(f.discipline)], ["Category", esc(f.category)],
+      ["Stage", esc(f.stage)], ["Venue", esc(f.venue)], ["Place", esc([f.city, f.country].filter(Boolean).join(", "))]])}</table></div>
+    ${parts ? `<div class="box"><h3>People and teams</h3><table><tr><th>Name</th><th>Kind</th><th>Role</th><th>Affiliation</th></tr>${parts}</table></div>` : ""}
+    ${results ? `<div class="box"><h3>Figures</h3><table><tr><th>Who</th><th>What</th><th>Value</th><th>Note</th></tr>${results}</table></div>` : ""}
+    ${dates ? `<div class="box"><h3>Dates</h3><table><tr><th>What</th><th>As written</th><th>Day</th></tr>${dates}</table></div>` : ""}
+    ${changes ? `<div class="box"><h3>Changes</h3><table>${changes}</table></div>` : ""}
+    ${quotes ? `<div class="box"><h3>Quotes</h3>${quotes}</div>` : ""}
+    ${(f.upcoming || []).length ? `<div class="box"><h3>Coming up</h3><ul>${f.upcoming.map((u) => `<li>${esc(u.what)} · ${esc(u.date_text)} · ${esc(u.where)}</li>`).join("")}</ul></div>` : ""}
+    ${notes ? `<div class="box"><h3>Not found in the article (check these)</h3><ul>${notes}</ul></div>` : ""}
+    <div class="box"><h3>Text</h3><div class="text">${esc(a.text)}</div></div>`;
+}
+
+async function ask() {
+  const question = $("question").value.trim();
+  if (!question) return;
+  $("askBtn").disabled = true;
+  $("answer").innerHTML = `<p class="note">Thinking... (the model runs on this machine)</p>`;
+  try {
+    const r = await api("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, class: state.cls, date: state.day }) });
+    const src = (r.sources || []).map((s) => `<li><a href="#" data-date="${esc(s.paper_date)}" data-id="${esc(s.id)}">${esc(s.headline)}</a> <span class="note">${esc(s.paper_date)}, p${s.page}</span></li>`).join("");
+    $("answer").innerHTML = `<div class="box"><h3>${r.found === "yes" ? "Answer" : "Not in the stored news"}</h3>
+      <p>${esc(r.answer)}</p>
+      ${r.evidence ? `<p class="note">Evidence: “${esc(r.evidence)}” ${r.evidence_in_article ? "(found in the article)" : "(not found word for word: check it)"}</p>` : ""}
+      ${src ? `<p class="note">Sources</p><ul>${src}</ul>` : ""}
+      <p class="note">${r.given ? `Looked at ${r.given.length} article(s) in ${r.seconds}s.` : ""}</p></div>`;
+    document.querySelectorAll("#answer a[data-id]").forEach((a) => a.onclick = (e) => {
+      e.preventDefault(); showArticle(a.dataset.date, a.dataset.id, null); });
+  } catch (e) {
+    $("answer").innerHTML = `<p class="note">Could not answer: ${esc(e.message)}</p>`;
+  } finally {
+    $("askBtn").disabled = false;
+  }
+}
+
+$("cls").onchange = loadDays;
+$("day").onchange = loadList;
+$("go").onclick = search;
+$("q").onkeydown = (e) => { if (e.key === "Enter") search(); };
+$("all").onclick = loadList;
+$("askBtn").onclick = ask;
+$("question").onkeydown = (e) => { if (e.key === "Enter") ask(); };
+loadClasses().catch((e) => { $("list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

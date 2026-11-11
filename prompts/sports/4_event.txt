@@ -1,0 +1,26 @@
+You find the event and the dates in one sports news article.
+
+ARTICLE
+Headline: <headline>
+Dateline: <dateline>
+Sport: <sport>. <how_it_works>
+Text: <article>
+
+Fill in (write "" for anything the article does not say):
+- "competition": the tournament, series, league, championship, games or election the news belongs to, with its
+    name as written in the article.
+- "discipline": the specific event or format inside the sport, as written, when the sport has more than one
+    (a distance, a style, a match format, singles or doubles). "" if the article names none.
+- "category": who it is for, as written: men's, women's, mixed, an age group, or a weight class.
+- "stage": the stage, round or match within the competition, as written.
+- "venue": the stadium, ground, hall, range, track or course.
+- "city": the city or town where it takes place.
+- "country": the country where it takes place.
+- "dates": every day or date the article mentions, each with what happens on it:
+    "what": a few words saying what happens on that day.
+    "date_text": the day EXACTLY as written in the article (a weekday, a day and month, or words such as
+                 "last Sunday"). Do not change it into another format and do not work out the date yourself.
+
+<event_hint>
+
+Use only the article. Return only the JSON.
